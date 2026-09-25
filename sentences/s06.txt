@@ -1,0 +1,30 @@
+s06_001|en|The cows were resting in the shade of the big banyan tree.
+s06_002|en|Please bring your identity card, they will not let you in without it.
+s06_003|en|The auto driver refused to go by the meter, so we took a bus.
+s06_004|en|I am reading a long novel about a family living by the sea.
+s06_005|en|The tailor promised the clothes would be ready by Wednesday.
+s06_006|en|We need two more volunteers for the event on Saturday morning.
+s06_007|en|The volleyball match went on until it was too dark to see.
+s06_008|en|She made the most delicious paneer curry for dinner last night.
+s06_009|en|The river was flowing very fast after a week of heavy rain.
+s06_010|en|Can you please speak a little slower, I am writing this down.
+s06_011|en|I paid the fees online, but the receipt has not come yet.
+s06_012|en|We made paper boats and floated them in the rainwater.
+s06_013|en|My father reads the newspaper every morning with his first cup of tea.
+s06_014|en|The bridge on the main road is closed for repairs until next month.
+s06_015|en|I need the file urgently, the client is waiting on the other line.
+s06_016|en|We found a stray puppy near the gate and gave it some milk.
+s06_017|en|The shop on the corner has the crispiest jalebis in town.
+s06_018|en|The shopkeeper gave us a discount because we bought so much.
+s06_019|en|My phone battery is almost dead, so I will message you later.
+s06_020|en|Her garden is full of roses, marigolds and tulsi plants.
+s06_021|en|The concert tickets were sold out within an hour of release.
+s06_022|en|Let me know when you reach, so that I don't keep worrying.
+s06_023|en|The officer said the documents will be verified by next week.
+s06_024|en|We should plant a few more trees along the boundary wall.
+s06_025|en|The children lined up quietly for the morning assembly.
+s06_026|hi|पुस्तकालय में बहुत पुरानी और दिलचस्प किताबें रखी हैं।
+s06_027|hi|दर्ज़ी ने कहा है कि कपड़े बुधवार तक तैयार हो जाएँगे।
+s06_028|hi|थोड़ा धीरे बोलिए, यह सब लिखना है।
+s06_029|hi|शादी में ढोल की आवाज़ पूरी रात गूँजती रही।
+s06_030|hi|पापा हर सुबह चाय के साथ अख़बार पढ़ते हैं।

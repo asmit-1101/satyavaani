@@ -1,0 +1,30 @@
+s03_001|en|The farmers were busy harvesting the wheat before the rain arrived.
+s03_002|en|The water supply will be off tomorrow morning for maintenance work.
+s03_003|en|I just reached the office and the lift is not working again.
+s03_004|en|Our neighbour grows tomatoes and chillies in small pots on the balcony.
+s03_005|en|We are planning a trip to the hills during the summer vacation.
+s03_006|en|Could you please repeat that, the network here is very weak.
+s03_007|en|He has been practising for the marathon every morning since January.
+s03_008|en|The street lights came on one by one as it got darker.
+s03_009|en|The shop around the corner sells fresh vegetables every morning.
+s03_010|en|My friend is teaching his little brother how to ride a bicycle.
+s03_011|en|Please switch off the fan before you leave the room.
+s03_012|en|The train from Chennai is running about forty minutes late today.
+s03_013|en|I have attached the updated report, please review it when you get time.
+s03_014|en|The museum has a large collection of old coins and paintings.
+s03_015|en|She bought a new phone because the old screen was completely cracked.
+s03_016|en|The festival crowd made it almost impossible to find a parking spot.
+s03_017|en|I will call you back once I finish this meeting with the manager.
+s03_018|en|We walked through the forest and heard birds singing everywhere.
+s03_019|en|The teacher asked us to submit the assignment before the holidays.
+s03_020|en|Can you check whether the gas cylinder has been delivered?
+s03_021|en|It started raining heavily just as we stepped out of the cinema.
+s03_022|en|The new student in our class comes from a small town in Kerala.
+s03_023|en|My cousin is getting married in December, and the whole family is invited.
+s03_024|en|The internet was down for the entire afternoon, so nothing got done.
+s03_025|en|I always keep a bottle of water in my bag during summer.
+s03_026|hi|बगीचे में गुलाब के नए फूल खिल गए हैं।
+s03_027|hi|ट्रेन लगभग चालीस मिनट देरी से चल रही है।
+s03_028|hi|मैदान में लड़के शाम तक फ़ुटबॉल खेलते रहे।
+s03_029|hi|शाम को मंदिर के पास वाले बस स्टॉप पर मिलते हैं।
+s03_030|hi|डॉक्टर ने कहा है कि उसे दो हफ़्ते और आराम करना होगा।

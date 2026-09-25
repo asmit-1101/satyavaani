@@ -1,0 +1,30 @@
+s04_001|en|The boat moved slowly across the lake as the fog began to lift.
+s04_002|en|The bus was so crowded that I had to stand all the way home.
+s04_003|en|Please pick up some bread and eggs on your way back.
+s04_004|en|We need to finalise the budget before the review meeting on Monday.
+s04_005|en|My mother makes the best lemon pickle in the whole neighbourhood.
+s04_006|en|The mangoes this season are sweeter than they were last year.
+s04_007|en|I have a slight headache, so I will skip the gym today.
+s04_008|en|Could you share the location, I think I have taken a wrong turn.
+s04_009|en|We climbed to the top of the fort and could see the whole city.
+s04_010|en|The hospital visiting hours are from four to seven in the evening.
+s04_011|en|He spent the whole weekend repairing his old motorcycle.
+s04_012|en|The cat sleeps on the warm roof every afternoon in winter.
+s04_013|en|The school has declared a holiday tomorrow because of the heavy rain.
+s04_014|en|We waited for the delivery for three hours, but it never arrived.
+s04_015|en|The class was quiet while the teacher explained the new chapter.
+s04_016|en|The movie was much longer than I expected, but the ending was worth it.
+s04_017|en|He keeps all his old letters in a wooden box under the bed.
+s04_018|en|My laptop keeps freezing whenever I open more than a few tabs.
+s04_019|en|She speaks four languages and is now learning Japanese.
+s04_020|en|Please ask the guard to open the back gate for the delivery van.
+s04_021|en|The shop sells colourful bangles, earrings and small mirrors.
+s04_022|en|We celebrated her birthday with a small cake at the office.
+s04_023|en|The lecture was cancelled, so we spent the afternoon in the canteen.
+s04_024|en|The wind was so strong that the umbrella turned inside out.
+s04_025|en|The streets were completely empty early on Sunday morning.
+s04_026|hi|नदी के किनारे बैठकर सूरज डूबते देखना बहुत सुंदर लगता है।
+s04_027|hi|इस साल के आम पिछले साल से ज़्यादा मीठे हैं।
+s04_028|hi|रसोई से गरम पकौड़ों की ख़ुशबू आ रही है।
+s04_029|hi|हमने पूरी शाम पुराने स्कूल के दिनों की बातें कीं।
+s04_030|hi|सर्दियों में गरम चाय और मूँगफली का मज़ा ही अलग है।

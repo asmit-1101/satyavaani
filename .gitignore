@@ -1,0 +1,58 @@
+# SATYAVAANI .gitignore - an ALLOWLIST.
+# Everything is ignored unless it is listed below, so recordings, clones, voiceprints,
+# features, caches and backups can never be committed by accident.
+
+/*
+
+# ---- code, docs, sentence lists
+!/.gitignore
+!/.gitattributes
+!/README.md
+!/LICENSE
+!/requirements.txt
+!/requirements-lock.txt
+!/*.py
+!/sentences/
+!/docs/
+!/ref_code/
+/ref_code/*
+!/ref_code/*.py
+
+# ---- trained heads (a few MB). NOT models/voiceprints.npz: those are our teammates' voiceprints.
+!/models/
+/models/*
+!/models/README.md
+!/models/spk_head.pt
+!/models/deepfake/
+/models/deepfake/*
+!/models/deepfake/all.pt
+!/models/deepfake/fold_s0[1-6].pt
+!/models/deepfake/calib.json
+
+# ---- results: numbers only, no audio
+!/reports/
+/reports/*
+!/reports/*.json
+!/libri_exp/
+/libri_exp/*
+!/libri_exp/*.json
+!/libri_exp/*.pt
+/libri_exp/manifest.json
+
+# ---- never, even inside the folders above
+__pycache__/
+*.py[cod]
+*.wav
+*.mp3
+*.m4a
+*.flac
+*.ogg
+*.opus
+*.npz
+*.zip
+.env
+.env.*
+desktop.ini
+Thumbs.db
+.DS_Store
+~$*

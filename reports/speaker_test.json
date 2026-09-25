@@ -1,0 +1,71 @@
+{
+  "arch": "alpha(13) -> weighted sum -> LayerNorm -> Linear(1536->256) -> ReLU -> Linear(256->192)  =>  192-d",
+  "eer": 0.09083333333333332,
+  "eer_phone": 0.10833333333333331,
+  "threshold_librispeech": 0.31865932966483235,
+  "threshold_team": 0.7191943228244781,
+  "threshold_used": 0.7191943228244781,
+  "genuine_accept": 0.9083333333333333,
+  "impostor_reject": 0.91,
+  "clone_pass_rate": 0.24166666666666667,
+  "clone_pass_rate_phone": 0.4583333333333333,
+  "genuine_accept_phone": 0.925,
+  "mean_cos": {
+    "genuine": 0.8034841562310855,
+    "impostor": 0.5780000901098052,
+    "clone": 0.6352658644318581
+  },
+  "per_speaker": {
+    "s01": {
+      "name": "Saksham",
+      "genuine_cos": 0.7975302875041962,
+      "clone_cos": 0.6639593720436097,
+      "clone_pass": 0.25
+    },
+    "s02": {
+      "name": "Asmit",
+      "genuine_cos": 0.7754438251256943,
+      "clone_cos": 0.7345352858304978,
+      "clone_pass": 0.5
+    },
+    "s03": {
+      "name": "Vijay",
+      "genuine_cos": 0.7864609777927398,
+      "clone_cos": 0.5452777191996574,
+      "clone_pass": 0.15
+    },
+    "s04": {
+      "name": "Nikhil",
+      "genuine_cos": 0.8595522582530976,
+      "clone_cos": 0.6351603448390961,
+      "clone_pass": 0.15
+    },
+    "s05": {
+      "name": "Yogya",
+      "genuine_cos": 0.7998411178588867,
+      "clone_cos": 0.5657580405473709,
+      "clone_pass": 0.0
+    },
+    "s06": {
+      "name": "Shreyas",
+      "genuine_cos": 0.8020764708518981,
+      "clone_cos": 0.6669044241309166,
+      "clone_pass": 0.4
+    }
+  },
+  "layer_weights": [
+    0.0999,
+    0.0462,
+    0.0998,
+    0.0948,
+    0.1464,
+    0.0427,
+    0.0388,
+    0.0479,
+    0.007,
+    0.1224,
+    0.1181,
+    0.0692,
+    0.0667
+  ]
+}

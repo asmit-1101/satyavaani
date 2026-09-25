@@ -1,0 +1,30 @@
+s02_001|en|The sky turned orange and pink just before the sun went down.
+s02_002|en|I will be ten minutes late, please start the presentation without me.
+s02_003|en|The printer on the second floor has been out of paper since morning.
+s02_004|en|Can you lend me some money until my salary comes in next week?
+s02_005|en|She has been learning to play the guitar for almost a year now.
+s02_006|en|We found a nice small hotel close to the beach for the holidays.
+s02_007|en|My younger sister is learning to swim at the club near our house.
+s02_008|en|The flight was delayed by three hours because of heavy fog in Delhi.
+s02_009|en|I think the milk has gone bad, it smells a little sour.
+s02_010|en|The puppy chewed one of my slippers and hid the other under the bed.
+s02_011|en|The rent for this month has already been transferred to your account.
+s02_012|en|Our neighbours are having a small get together this Saturday evening.
+s02_013|en|We sat by the window and watched the rain fall on the street.
+s02_014|en|Remember to water the plants while I am away for the weekend.
+s02_015|en|The interview went well, and they said they would call me by Friday.
+s02_016|en|The old clock in the hall still keeps perfect time after forty years.
+s02_017|en|I cannot find the charger, did you move it from the drawer?
+s02_018|en|The children are playing in the park and will be back before sunset.
+s02_019|en|He carried a heavy bag of books all the way to the library.
+s02_020|en|Let us meet at the bus stop near the temple around six.
+s02_021|en|The software update will restart your computer in five minutes.
+s02_022|en|My grandmother tells the best stories about her childhood in the village.
+s02_023|en|The kite got stuck on the roof, so we climbed up to get it.
+s02_024|en|We ordered biryani for everyone because nobody wanted to cook.
+s02_025|en|Fresh idlis and hot sambar are the best breakfast on a cold morning.
+s02_026|hi|आसमान में आज बहुत सारी रंग-बिरंगी पतंगें उड़ रही थीं।
+s02_027|hi|बारिश की वजह से आज स्कूल की छुट्टी है।
+s02_028|hi|क्या आप मेरी आवाज़ ठीक से सुन पा रहे हैं?
+s02_029|hi|माँ पूछ रही हैं कि रविवार को खाने पर आओगे या नहीं।
+s02_030|hi|गर्मियों की छुट्टियों में हम नानी के गाँव जाते हैं।

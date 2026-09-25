@@ -1,0 +1,30 @@
+s01_001|en|The morning train to Mumbai was full, so we waited for the next one.
+s01_002|en|I left my keys on the kitchen table, can you check before you leave?
+s01_003|en|The meeting has been moved to Thursday afternoon at half past three.
+s01_004|en|My grandfather still wakes up at five to go for a long walk.
+s01_005|en|My brother is flying back from Bengaluru late tonight, so I will pick him up.
+s01_006|en|Could you send me the invoice by email before the end of the day?
+s01_007|en|The weather has been unusually hot this week, even for the month of May.
+s01_008|en|The guava tree in our garden is full of fruit this year.
+s01_009|en|We painted the old bicycle bright blue and it looks brand new.
+s01_010|en|We should book the train tickets now, they sell out very quickly during Diwali.
+s01_011|en|The doctor said he needs to rest for at least two more weeks.
+s01_012|en|Can you hear me clearly, or should I call you back from another number?
+s01_013|en|Our team finished the project two days ahead of the deadline.
+s01_014|en|Mom asked if you are coming home for dinner on Sunday.
+s01_015|en|The library closes at eight, so we still have about an hour left.
+s01_016|en|The children were drawing pictures of animals on the classroom wall.
+s01_017|en|He forgot to charge his phone again and missed the whole conversation.
+s01_018|en|The new cafe near the station serves really good filter coffee.
+s01_019|en|Please close the window, the dust is coming into the room.
+s01_020|en|The exam results will be announced on the college website next Monday.
+s01_021|en|I have been stuck in traffic for forty five minutes and still have not moved.
+s01_022|en|Let me know if the documents look fine before I submit them.
+s01_023|en|The bookshop near the college is selling old novels at half price.
+s01_024|en|We watched the cricket match together at my uncle's house.
+s01_025|en|I finally learned how to make round chapatis after many tries.
+s01_026|hi|सुबह की ठंडी हवा में टहलना बहुत अच्छा लगता है।
+s01_027|hi|दादी हर शाम आँगन में तुलसी के पास दीया जलाती हैं।
+s01_028|hi|कल सुबह पानी की सप्लाई बंद रहेगी।
+s01_029|hi|आज बाज़ार में बहुत भीड़ थी, सब लोग त्योहार की खरीदारी कर रहे थे।
+s01_030|hi|हमारे मोहल्ले में हर साल एक बड़ा मेला लगता है।

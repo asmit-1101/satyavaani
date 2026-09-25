@@ -1,0 +1,30 @@
+s05_001|en|The elephants at the sanctuary were bathing happily in the river.
+s05_002|en|I have booked a table for four at the restaurant near the lake.
+s05_003|en|The courier boy called twice, but nobody was at home to receive it.
+s05_004|en|Grandma is knitting a warm sweater for the baby before winter.
+s05_005|en|Our society is organising a blood donation camp next Sunday.
+s05_006|en|I think I left the gas on, can you please go and check?
+s05_007|en|He finally cleared the driving test on his third attempt.
+s05_008|en|The bus stopped at a small dhaba where we had hot tea.
+s05_009|en|We should leave early to avoid the evening traffic on the highway.
+s05_010|en|My sister just got her first job at a software company in Pune.
+s05_011|en|The fireflies lit up the garden on a warm summer night.
+s05_012|en|Can you send me the photos from yesterday's function?
+s05_013|en|The power cut lasted for almost six hours last night.
+s05_014|en|We rearranged the furniture to make the room look bigger.
+s05_015|en|The new metro line has made my daily commute much shorter.
+s05_016|en|I forgot my password and now the account is locked.
+s05_017|en|Our flight lands at eleven thirty, so we will reach home after midnight.
+s05_018|en|The boy practised the harmonium every evening before dinner.
+s05_019|en|The kids built a small sandcastle and then watched the waves wash it away.
+s05_020|en|Let me check my calendar and get back to you by the evening.
+s05_021|en|The chemist said the medicine will be available only tomorrow.
+s05_022|en|My uncle collects old stamps from different countries.
+s05_023|en|We had a long discussion about which college to choose.
+s05_024|en|The stadium was full of fans waving flags and singing loudly.
+s05_025|en|The clouds cleared up and the stars were bright after the storm.
+s05_026|hi|पहाड़ों पर इस बार बहुत बर्फ़ गिरी है।
+s05_027|hi|कल रात लगभग छह घंटे बिजली नहीं थी।
+s05_028|hi|हमारी गली का कुत्ता सबका दोस्त बन गया है।
+s05_029|hi|बच्चे पार्क में खेल रहे हैं और शाम से पहले लौट आएँगे।
+s05_030|hi|नई मेट्रो लाइन से रोज़ का सफ़र काफ़ी छोटा हो गया है।

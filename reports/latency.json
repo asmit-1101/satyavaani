@@ -1,0 +1,9 @@
+{
+  "median_ms": 18.315049936063588,
+  "p95_ms": 30.39424496237188,
+  "encoder_ms": 15.875249984674156,
+  "heads_ms": 2.439799951389432,
+  "vram_gb": 0.28,
+  "device": "NVIDIA GeForce RTX 5050 Laptop GPU",
+  "realtime_factor": 163.7997171983023
+}
