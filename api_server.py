@@ -1,10 +1,10 @@
-"""SATYAVAANI - REST API (FastAPI; installed together with Gradio).
-    python api_server.py      ->  http://127.0.0.1:8000/docs   (interactive docs)
-Endpoints
-    GET  /v1/health                      model + device info
-    GET  /v1/voiceprints                 who is enrolled
-    POST /v1/score   file, claimed_id?, context_prior?   -> risk, verdict, per-window details
-    POST /v1/enroll  file, name                          -> new voiceprint id
+"""REST API for SATYAVAANI (FastAPI).
+
+    python api_server.py        # docs at http://127.0.0.1:8000/docs
+
+GET  /v1/health, /v1/voiceprints
+POST /v1/score   file, claimed_id?, context_prior?  -> risk, verdict, per-window details
+POST /v1/enroll  file, name                         -> voiceprint id
 """
 import os, tempfile
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile

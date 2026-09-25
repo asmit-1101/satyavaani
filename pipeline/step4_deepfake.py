@@ -1,14 +1,17 @@
-"""STEP 4 - train the deepfake head and test it honestly.
-    python step4_deepfake.py
-Leave-one-speaker-out: for each teammate, train on the other 5 (voices + their XTTS clones) and test on
-this one - their voice AND sentences were never seen. That fold's head is saved and is the one the app
-uses whenever this teammate's voice is in a demo call.
-Also: silence-only test (pauses only - should be ~50%), probability calibration (Platt) from the
-out-of-fold scores, and a final head trained on all 6 for new voices (upload / microphone).
-Writes models\\deepfake\\fold_sNN.pt, all.pt, calib.json and reports\\deepfake_loso.json
+"""Step 4: train and test the deepfake head, leave-one-speaker-out.
+
+    python pipeline/step4_deepfake.py
+
+For each teammate: train on the other five, test on them. Each fold's head is saved and the app
+uses it for that teammate's demo calls. Also runs the pause-only shortcut test, fits Platt
+calibration on the out-of-fold scores, and trains a final head on everyone for new voices.
+Writes models/deepfake/ and reports/deepfake_loso.json.
 """
 import json
 import numpy as np
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # repo root, for the sv_* modules
 from sv_audio import FEATS, DF_DIR, REPORTS, NAME
 from sv_models import fit_deepfake, DEV
 from sv_heads import eer, platt, sigmoid
@@ -61,7 +64,7 @@ def main():
                calib=dict(a=a, b=b), layer_weights=[round(float(v), 4) for v in Wm])
     (REPORTS / "deepfake_loso.json").write_text(json.dumps(rep, indent=2))
 
-    print("\n" + "=" * 66 + "\nFOR THE SLIDES\n" + "=" * 66)
+    print("\n" + "=" * 66 + "\nSUMMARY\n" + "=" * 66)
     print(f"  Deepfake EER, unseen speaker (6-fold LOSO) : {100 * e.mean():.1f}% +- {100 * e.std():.1f}%")
     print(f"  ... phone-line (G.711) copies only         : {100 * np.nanmean(et):.1f}%")
     print(f"  Silence-only EER (want ~50%)               : {100 * silm:.1f}%")
@@ -69,10 +72,10 @@ def main():
     print("\n  Layer weights the deepfake head learned (average over folds):")
     for i, v in enumerate(Wm): print(f"    L{i:<2} {v:.3f} {'#' * int(round(v * 150))}")
     if silm == silm and silm < 0.30:
-        print("\n  !! Silence-only EER is low: the pauses alone still give real vs fake away,")
+        print("\n  Warning: silence-only EER is low: the pauses alone still give real vs fake away,")
         print("     so part of the speech EER may be background, not voice. Say so honestly, or add more noise.")
     print(f"\nsaved models\\deepfake\\ (6 fold heads + all.pt + calib.json) and reports\\deepfake_loso.json")
-    print("Next: python step5_speaker.py")
+    print("Next: python pipeline/step5_speaker.py")
 
 if __name__ == "__main__":
     main()

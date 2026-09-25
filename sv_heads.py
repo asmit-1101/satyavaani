@@ -1,5 +1,4 @@
-"""SATYAVAANI - numpy-only pieces (no torch): speaker head rebuild + forward, voiceprints, EER, calibration.
-Kept torch-free on purpose: fast, and testable anywhere."""
+"""Torch-free parts: speaker-head forward pass, voiceprints, EER and Platt calibration."""
 from collections import OrderedDict
 from pathlib import Path
 import numpy as np

@@ -1,10 +1,9 @@
-"""SATYAVAANI - the live call engine.
-Every HOP_SEC it takes the last 3 s of the call and does ONE wav2vec2 pass; the same features go to
-  * the deepfake head  -> p_synth  (is this voice synthetic?)
-  * the speaker head   -> voiceprint -> cosine to the person the caller claims to be
-and fuses them into one risk score:
-  risk = P(synthetic OR not the claimed person), shifted by the call-context prior, smoothed over time.
-No torch in this file: the models are passed in, so the logic is testable on its own.
+"""Live scoring engine.
+
+Every 3 s it takes the latest window, runs one wav2vec2 pass and sends the same features to the
+deepfake head (is it synthetic?) and the speaker head (does it match the claimed caller?).
+Risk = P(synthetic or not the claimed person), shifted by call context and smoothed over time.
+The models are passed in, so this file doesn't need torch.
 """
 import json, time
 from collections import OrderedDict
@@ -68,7 +67,7 @@ class Engine:
         enc = M.Encoder()
         bank, cal = M.load_deepfake_bank()
         if not bank:
-            raise SystemExit("No deepfake heads in models\\deepfake\\ - run step4_deepfake.py first.")
+            raise SystemExit("No deepfake heads in models\\deepfake\\ - run pipeline/step4_deepfake.py first.")
         spk = M.load_speaker_head(verbose=verbose)
         vps = load_voiceprints()
         rep = lambda n: json.loads((REPORTS / n).read_text()) if (REPORTS / n).exists() else {}

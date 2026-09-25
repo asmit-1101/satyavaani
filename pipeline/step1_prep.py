@@ -1,14 +1,15 @@
-"""STEP 1 - your phone recordings -> clean 16 kHz clips.
-    python step1_prep.py
-Put ALL recordings flat in raw\\ (any names). Nothing to rename:
-  * longer than 20 s -> a reference passage (matched to a person by name in the file name,
-                        or you fill in reports\\reference_map.txt once)
-  * shorter          -> a sentence; the number in its name says who and which one
-                        (ranges are in sv_audio.SPEAKERS; gaps like the missing 155 are fine)
-Writes data\\real\\s01_001.wav ..., data\\ref\\s01.wav ..., reports\\mapping_s01.txt ...
+"""Step 1: turn raw phone recordings into clean 16 kHz clips.
+
+    python pipeline/step1_prep.py
+
+Put every recording in raw/. Files longer than 20 s are reference passages (matched to a person by
+name, or through reports/reference_map.txt); shorter ones are sentences, numbered as in
+sv_audio.SPEAKERS. Writes data/real/, data/ref/ and reports/mapping_sNN.txt.
 """
 import re, sys
 import numpy as np
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # repo root, for the sv_* modules
 from sv_audio import (RAW, REAL_DIR, REF_DIR, REPORTS, SPEAKERS, SR, load16, duration, trim_silence,
                       rms_norm, save16, load_sentences)
 
@@ -34,7 +35,7 @@ def read_map():
 def write_map(unclaimed, missing, durs):
     lines = ["# Which reference passage belongs to whom?",
              "# Play the long files listed at the bottom, write the right file name after each '=',",
-             "# save this file, then run step1_prep.py again.", ""]
+             "# save this file, then run pipeline/step1_prep.py again.", ""]
     for sid, name, *_ in SPEAKERS:
         guess = unclaimed[missing.index(sid)].name if (sid in missing and len(unclaimed) == len(missing)) else ""
         lines.append(f"{sid} {name:<8} = {guess}")
@@ -72,7 +73,7 @@ def main():
         print("PAUSED - can't tell whose reference passage is whose.")
         print(f"  1. notepad {MAPFILE}")
         print("  2. play the long files, fix the file name after each '=' (a guess is filled in)")
-        print("  3. save, run  python step1_prep.py  again")
+        print("  3. save, run  python pipeline/step1_prep.py  again")
         return
     for sid in missing: problems.append(f"{sid}: no reference passage found")
 
@@ -110,9 +111,9 @@ def main():
     print("\nCHECK: notepad reports\\mapping_s06.txt, then play data\\real\\s06_004.wav and s06_005.wav -")
     print("       the words in each must match the sentence printed on its line.")
     if problems:
-        print("\n!! FIX THESE:"); [print("   -", p) for p in problems]
+        print("\nFix these:"); [print("   -", p) for p in problems]
     else:
-        print("\nAll good. Next: python step2_clone.py")
+        print("\nAll good. Next: python pipeline/step2_clone.py")
 
 if __name__ == "__main__":
     main()

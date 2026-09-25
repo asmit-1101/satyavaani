@@ -1,7 +1,8 @@
-"""SATYAVAANI - the demo app.
-    python app.py        ->  opens http://127.0.0.1:7860
-Tabs: Live call (demo calls from your team's recordings, an upload, or the live microphone),
-      Under the hood (layer weights of both heads + measured numbers), Enrol, API.
+"""SATYAVAANI web app (Gradio).
+
+    python app.py               # http://127.0.0.1:7860
+
+Tabs: Live call (team demo calls, an upload, or the live mic), Under the hood, Enrol, API.
 """
 import time
 import numpy as np

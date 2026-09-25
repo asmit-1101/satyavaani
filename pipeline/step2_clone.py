@@ -1,9 +1,9 @@
-"""STEP 2 - an XTTS-v2 clone of every recorded sentence, in the same person's voice.
-    python step2_clone.py
-Reads  data\\ref\\sNN.wav (their reference passage) + sentences\\sNN.txt
-Writes data\\xtts\\xtts__sNN_0NN.wav - same sentence, same voice, 16 kHz.
-Ctrl+C is safe; rerun skips clones that exist. Bad clone? delete that file and rerun.
-Needs:  pip install coqui-tts   (check torch still sees the GPU afterwards - see README)
+"""Step 2: an XTTS-v2 clone of every recorded sentence, in the same person's voice.
+
+    python pipeline/step2_clone.py
+
+Voice sample: data/ref/sNN.wav. Text: sentences/sNN.txt. Writes data/xtts/xtts__sNN_0NN.wav.
+Safe to stop and rerun; existing clones are skipped. Needs coqui-tts.
 """
 import os
 os.environ["COQUI_TOS_AGREED"] = "1"
@@ -13,6 +13,9 @@ import time
 from math import gcd
 import numpy as np, soundfile as sf, torch
 from scipy.signal import resample_poly
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # repo root, for the sv_* modules
 from sv_audio import SPEAKERS, REAL_DIR, REF_DIR, XTTS_DIR, to16k, trim_silence, rms_norm, save16, load_sentences
 
 def patch_reference_loader():
@@ -35,7 +38,7 @@ def main():
     jobs = []
     for sid, name, *_ in SPEAKERS:
         ref = REF_DIR / f"{sid}.wav"
-        if not ref.exists(): print(f"skip {sid}: no {ref.name} - run step1_prep.py"); continue
+        if not ref.exists(): print(f"skip {sid}: no {ref.name} - run pipeline/step1_prep.py"); continue
         for cid, (lang, text) in load_sentences(sid).items():
             if (REAL_DIR / f"{cid}.wav").exists():
                 jobs.append((cid, lang, text, str(ref)))
@@ -70,7 +73,7 @@ def main():
         print(f"  {sid} {name:<8} real {r:2d}  clones {f:2d}" + ("" if r == f else "   <-- mismatch"))
     if real - fake: print("no clone for:", sorted(real - fake))
     print("\nLISTEN to two or three (e.g. data\\xtts\\xtts__s01_011.wav, xtts__s04_027.wav in Hindi).")
-    print("Next: python step3_features.py")
+    print("Next: python pipeline/step3_features.py")
 
 if __name__ == "__main__":
     main()

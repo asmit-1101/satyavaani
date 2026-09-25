@@ -1,6 +1,4 @@
-"""SATYAVAANI - audio helpers shared by every step and by the app.
-numpy + scipy + soundfile only (no torch), so it loads fast and is easy to test.
-"""
+"""Audio helpers shared by the pipeline and the app (numpy, scipy and soundfile only)."""
 import audioop, subprocess, zlib
 from fractions import Fraction
 from math import gcd

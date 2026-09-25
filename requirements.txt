@@ -2,7 +2,6 @@
 #      pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu128
 #    (no NVIDIA GPU: pip install torch torchaudio)
 # 2) Then: pip install -r requirements.txt
-# requirements-lock.txt has the exact versions we ran with.
 
 numpy
 scipy
@@ -14,6 +13,6 @@ uvicorn
 python-multipart
 audioop-lts; python_version >= "3.13"
 
-# only for making clones (step2_clone.py) and the LibriSpeech experiments
+# only for making clones (pipeline/step2_clone.py) and the LibriSpeech experiments
 coqui-tts==0.27.5
 torchcodec          # needs FFmpeg (shared build) on PATH

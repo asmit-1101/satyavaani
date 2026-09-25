@@ -1,15 +1,15 @@
-"""Which voiceprint is best: mic-only, codec-only, or mic+codec average?
-    python -u compare_voiceprints.py
-For each teammate: voiceprint from sentences 001-010 built three ways, each tested on sentences 011-030
-(never used to enrol) heard the SAME way:  codec -> codec,  mic -> mic,  average -> both (pooled).
-  genuine  = their own clips        -> should match
-  impostor = other teammates' clips -> should NOT match
-  clone    = XTTS clones of them    -> how many fool the voice check
-Read-only: does not touch models\\voiceprints.npz or anything the app uses.
-Writes reports\\voiceprint_compare.json
+"""Build voiceprints three ways (clean mic, phone line, or the average) and compare them.
+
+    python experiments/compare_voiceprints.py
+
+Each teammate is enrolled from sentences 001-010 and tested on 011-030 heard the same way.
+Reports genuine/impostor EER and how many XTTS clones pass. Writes reports/voiceprint_compare.json.
 """
 import json
 import numpy as np
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # repo root, for the sv_* modules
 from sv_audio import (SPEAKERS, NAME, ENROL_CLIPS, TEST_CLIPS, REPORTS, WIN, real_clip, xtts_clip,
                       load16, rms_norm, trim_silence, pad_to, train_windows, telephonize)
 from sv_models import Encoder, load_speaker_head
@@ -82,7 +82,7 @@ def main():
     print("gap = genuine similarity minus other-teammate similarity: bigger = voices better separated.")
     REPORTS.mkdir(exist_ok=True)
     (REPORTS / "voiceprint_compare.json").write_text(json.dumps({f"{m} | test {t}": r for (m, t), r in results.items()}, indent=2))
-    print("saved reports\\voiceprint_compare.json  (your voiceprints and app are untouched)")
+    print("saved reports\\voiceprint_compare.json")
 
 if __name__ == "__main__":
     main()

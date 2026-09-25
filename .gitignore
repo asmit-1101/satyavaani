@@ -10,8 +10,16 @@
 !/README.md
 !/LICENSE
 !/requirements.txt
-!/requirements-lock.txt
 !/*.py
+!/pipeline/
+/pipeline/*
+!/pipeline/*.py
+!/experiments/
+/experiments/*
+!/experiments/*.py
+!/tools/
+/tools/*
+!/tools/*.py
 !/sentences/
 !/docs/
 !/ref_code/

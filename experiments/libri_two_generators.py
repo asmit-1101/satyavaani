@@ -1,20 +1,17 @@
-"""Two generators: train the deepfake head on XTTS + kNN-VC together, test on unseen speakers.
-    python -u libri_two_generators.py            (needs libri_generalization.py run first)
-    python -u libri_two_generators.py --eval     (skip making fakes)
-Uses libri_exp\\ (manifest, XTTS clones, kNN-VC fakes of the 20 test speakers) and adds:
-  * kNN-VC fakes for the FIT and CAL speakers (voice of speaker i <- sentences of the next speaker in the
-    SAME group, so no test speaker's audio ever reaches training)
-  * setting A only: pauses gated + filled with noise, mic tilt, 5-30 dB noise, NO echo, NO pitch change,
-    everything through the phone line (G.711)
-  * a STRICT silence test: only frames >= 100 ms away from any speech
-Trains 3 heads on the same features - XTTS only / kNN-VC only / BOTH - and tests each on the 20 unseen
-speakers against XTTS, kNN-VC, and both. Writes libri_exp\\two_generators.json + three models.
-Your app's models are untouched.
+"""Train the deepfake head on XTTS and kNN-VC together; test on unseen LibriSpeech speakers.
+
+    python experiments/libri_two_generators.py [--eval]
+
+Run experiments/libri_generalization.py first. Adds kNN-VC fakes for the training and calibration speakers
+(voices swapped within each group, so no test audio reaches training), uses noise setting A and a
+strict silence test (frames at least 100 ms from speech). Trains three heads (XTTS only, kNN-VC
+only, both) and writes libri_exp/two_generators.json.
 """
 import sys, json, time, warnings
 warnings.filterwarnings("ignore")
 from pathlib import Path
 import numpy as np
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # repo root, for the sv_* modules
 from sv_audio import SR, load16, save16, rms_norm, trim_silence, train_windows, frame_db
 from sv_heads import eer, platt, sigmoid
 import libri_generalization as LG
@@ -132,7 +129,7 @@ def run(d):
     print("read it: 'XTTS only' vs kNN-VC = unseen generator; 'kNN-VC only' vs XTTS = unseen the other way;")
     print("         'BOTH' = what the app should use if it holds up on both columns.")
     for n, r in rows.items(): print(f"  layer weights {n:<11}: " + " ".join(f"L{i}:{v:.2f}" for i, v in enumerate(r["layer_weights"])))
-    print(f"saved {REPORT2.name} and three models in libri_exp\\  (your app's models untouched)")
+    print(f"saved {REPORT2.name} and three models in libri_exp\\")
 
 if __name__ == "__main__":
     man = LG.select()

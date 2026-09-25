@@ -1,143 +1,89 @@
 # SATYAVAANI
 
-**Real-time detection of AI voice clones on live calls.** Smart India Hackathon, problem statement 21064.
+Real-time detection of AI voice clones on phone calls. Built for Smart India Hackathon, problem statement 21064.
 
-Every 3 seconds, one pass of a frozen wav2vec2 encoder feeds two small heads:
-
-- a **deepfake head**: is this voice synthetic?
-- a **speaker head**: is it really the person the caller ID claims?
-
-The two answers are fused into one risk score: **PASS** (under 45), **VERIFY** (45–75) or **HOLD** (75 and up).
+Every 3 seconds we run one pass of a frozen wav2vec2 model over the call audio and feed it to two small heads. One asks *is this voice synthetic?*, the other asks *is this really the person on the caller ID?* Together they give one risk score: **PASS**, **VERIFY** or **HOLD**.
 
 ```mermaid
 flowchart LR
-    A["Call audio<br/>3 s windows"] --> B["Phone line<br/>8 kHz G.711"]
-    B --> C["wav2vec2-base (frozen)<br/>13 layers, mean + std"]
-    C --> D["Deepfake head<br/>human vs synthetic"]
-    C --> E["Speaker head<br/>192-d voiceprint"]
-    D --> F["Median of the<br/>last 3 windows"]
-    E --> G["Cosine vs the claimed<br/>person's voiceprint"]
-    F --> H["Risk = synthetic OR not them<br/>PASS / VERIFY / HOLD"]
-    G --> H
+    A["Call audio, 3 s windows"] --> B["wav2vec2-base (frozen)"]
+    B --> C["Deepfake head"]
+    B --> D["Speaker head"]
+    C --> E["Risk: synthetic OR not the caller"]
+    D --> E
+    E --> F["PASS / VERIFY / HOLD"]
 ```
 
 ## Results
 
-| What we measured | Result |
+| | |
 |---|---|
-| Deepfake detection on a teammate never seen in training (6-fold leave-one-speaker-out) | **4.6% ± 3.3% EER** |
-| Same, phone-line (G.711) audio only | **4.7% EER** |
-| At the operating threshold | **94.7%** of clones caught, **7.1%** of real voices flagged |
-| Pause-only shortcut check (≈ 50% means pauses carry no clue) | 37.5% (10.6% before we fixed it) |
-| Speaker verification on our team (never trained on) | 10.9% EER with phone-line voiceprints |
-| XTTS clones that fool the voice check alone over a phone line | 43% (why both heads are needed) |
-| Trained on XTTS, tested on an unseen generator (kNN-VC) | ~40% EER: the main open problem |
-| Trained on XTTS **and** kNN-VC (LibriSpeech, 20 unseen speakers) | kNN-VC 40.3% → **24.7%**, XTTS unchanged at 16.1% |
-| Latency per 3 s window, both heads, one encoder pass | **18.3 ms** on an RTX 5050 laptop GPU (164× faster than real time) |
+| Deepfake detection on a teammate the model never heard | **4.6% ± 3.3% EER** (4.7% on phone-line audio) |
+| At the app's threshold | 94.7% of clones caught, 7.1% of real voices flagged |
+| Speaker check on our team | 10.9% EER |
+| XTTS clones that fool the speaker check alone, over a phone line | 43%, which is why we need both heads |
+| Trained on one generator (XTTS), tested on another (kNN-VC) | ~40% EER, our main open problem |
+| Trained on both generators (LibriSpeech, 20 unseen speakers) | kNN-VC drops from 40.3% to 24.7% EER |
+| Time per 3 s window, RTX 5050 laptop GPU | 18.3 ms |
 
-The full write-up of every experiment is in [docs/SATYAVAANI_experimental_findings.pdf](docs/SATYAVAANI_experimental_findings.pdf).
+Everything we tried, including what didn't work, is written up in [docs/SATYAVAANI_experimental_findings.pdf](docs/SATYAVAANI_experimental_findings.pdf).
 
-![Heads trained on one or two generators](docs/chart_generators.png)
-![Layer weights learned by each head](docs/chart_layers.png)
+![EER for heads trained on one or two generators](docs/chart_generators.png)
 
-## Quick start
+Which wav2vec2 layers each deepfake head learned to rely on. Each generator leaves its traces at a different depth:
 
-Tested on Windows 11 with an RTX 5050 Laptop GPU (8 GB) and Python 3.10 or newer.
+![Layer weights per training set](docs/chart_layers.png)
+
+## Run it
 
 ```powershell
 python -m venv .venv
 .venv\Scripts\Activate.ps1
-pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu128   # GPU build; see requirements.txt
+pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu128
 pip install -r requirements.txt
 
-python app.py          # web app at http://127.0.0.1:7860
-python api_server.py   # REST API at http://127.0.0.1:8000/docs
+python app.py          # http://127.0.0.1:7860
+python api_server.py   # http://127.0.0.1:8000/docs
 ```
 
-The trained heads are in `models/`, and `facebook/wav2vec2-base` downloads on first run.
-
-What works out of the box:
-
-- **Upload** a recording, or use the **live microphone**.
-- **Enrol** a voice from 10–20 s of speech; only 192 numbers are stored.
-- Score files through the **API**.
-
-The ready-made demo calls need our team's recordings, which are not in this repository (see below).
-
-### REST API
-
-| Endpoint | What it does |
-|---|---|
-| `POST /v1/score` | score an audio file (optional `claimed_id`) |
-| `POST /v1/enroll` | add a voiceprint |
-| `GET /v1/voiceprints` | list enrolled voices |
-| `GET /v1/health` | health check |
-
-## How the risk is computed
-
-- `p_synth`: the deepfake head's probability, calibrated with Platt scaling on out-of-fold scores. The median of the last three windows is used, so one odd window (a laugh, a shout) can't flip the call.
-- `p_imp = sigmoid(15 × (threshold − cosine))` between the speaker's running voiceprint and the claimed person's. It is only used after 4 s of speech.
-- `risk = 1 − (1 − p_synth)(1 − p_imp)`: synthetic OR not the claimed person. A voice match never lowers the risk.
-- Adjustments:
-  - Call context raises the prior: unknown number, money/OTP request, urgency.
-  - The risk is smoothed from window to window.
-  - Silent windows hold the score.
-  - Windows under 40% speech are skipped by an energy VAD.
-- The live microphone goes through an 8 kHz G.711 phone line before scoring. Voiceprints are built from the same channel, and half of the training audio went through it too.
+The trained heads are in `models/`, and wav2vec2-base downloads on first run. You can upload a recording, use the live microphone, or enrol new voices. The built-in demo calls need our team's recordings, which aren't in this repo.
 
 ## Train it on your own voices
 
-1. Put phone recordings in `raw/`. Record 30 sentences per person from `sentences/`, plus a ~40 s reference passage each.
-2. Describe who read which files in the `SPEAKERS` table at the top of `sv_audio.py`.
-3. Run the pipeline:
+Put your phone recordings in `raw/`, describe who read what in `SPEAKERS` at the top of `sv_audio.py`, then:
 
 ```powershell
-python step1_prep.py        # sort, trim and normalise recordings  -> data/real, data/ref
-python step2_clone.py       # XTTS-v2 clone of every sentence       -> data/xtts
-python step3_features.py    # wav2vec2 features, same augmentation for real and fake
-python step4_deepfake.py    # 6-fold leave-one-speaker-out training  -> models/deepfake, reports/deepfake_loso.json
-python step5_speaker.py     # phone-line voiceprints + speaker test  -> models/voiceprints.npz, reports/speaker_test.json
-python measure_latency.py   # -> reports/latency.json
+python pipeline/step1_prep.py        # clean the recordings
+python pipeline/step2_clone.py       # XTTS-v2 clone of every sentence
+python pipeline/step3_features.py    # wav2vec2 features, same augmentation for real and fake
+python pipeline/step4_deepfake.py    # leave-one-speaker-out training and test
+python pipeline/step5_speaker.py     # enrol voiceprints and test the speaker check
+python pipeline/measure_latency.py
 ```
 
-The speaker head was trained separately on LibriSpeech train-clean-100. The original training script is kept in `ref_code/` for reference; its paths point to our machine.
+The speaker head was trained separately on LibriSpeech train-clean-100 (`ref_code/train_speaker.py`).
 
-### Experiments
+## What's where
 
-| Script | Question it answers |
-|---|---|
-| `libri_generalization.py` | Does a head trained on XTTS clones of 70 LibriSpeech speakers catch kNN-VC fakes of 20 unseen speakers? How does background noise level change that? |
-| `libri_two_generators.py` | What changes when the head is trained on XTTS and kNN-VC together? |
-| `compare_voiceprints.py` | Should voiceprints be built from clean audio, phone-line audio, or both? |
+```
+app.py, api_server.py     the web app and the REST API
+sv_*.py                   audio processing, models, scoring engine, UI pieces
+pipeline/                 steps 1-5 and the latency test
+experiments/              LibriSpeech generalisation, two generators, voiceprint comparison
+tools/                    export layer weights, redraw the layer chart
+models/                   trained heads (see models/README.md)
+reports/, libri_exp/      results as JSON
+docs/                     findings report and charts
+```
 
-Result summaries are in `reports/` and `libri_exp/`.
+## Not in this repo
 
-## Files
+- **Our teammates' recordings, their AI clones and their voiceprints.** Real voices of named people next to working clones of them is exactly what an impersonator would want.
+- **Features, LibriSpeech audio and generated clips.** They're big and can be rebuilt. LibriSpeech is at [openslr.org/12](https://www.openslr.org/12).
+- **Third-party models.** [wav2vec2-base](https://huggingface.co/facebook/wav2vec2-base) (Apache-2.0), [XTTS-v2](https://huggingface.co/coqui/XTTS-v2) (Coqui Public Model License, non-commercial) and [kNN-VC](https://github.com/bshall/knn-vc) (MIT) download from their own sources.
 
-| File | What it is |
-|---|---|
-| `sv_audio.py` | paths, team table, audio loading, trimming, pause gating, noise, phone line, windows, VAD, streaming resampler |
-| `sv_heads.py` | numpy speaker-head forward pass, voiceprints, EER, calibration |
-| `sv_models.py` | wav2vec2 encoder, deepfake head and its training, model loaders |
-| `sv_engine.py` | live scoring: buffer → window → one encoder pass → both heads → fused risk |
-| `sv_views.py` | HTML/SVG pieces of the app (risk ring, timeline, layer chart) |
-| `app.py`, `api_server.py` | Gradio app and FastAPI server |
-| `step1`–`step5`, `measure_latency.py` | the training and evaluation pipeline, in order |
-| `models/` | trained heads (see `models/README.md`) |
-| `docs/` | the experimental findings report and charts |
+## Known limitations
 
-## What is not in this repository, and why
-
-- **Our team's recordings, reference passages and their AI clones** (`raw/`, `data/`). Voice samples plus working clones of named people are exactly what an impersonator needs, so they stay private.
-- **Our team's voiceprints** (`models/voiceprints.npz`). These are biometric data.
-- **Features, LibriSpeech audio and generated LibriSpeech clones.** They are large and can be regenerated. LibriSpeech is available at [openslr.org/12](https://www.openslr.org/12) (CC BY 4.0).
-- **Third-party models.** They download from their own sources on first use:
-  - [wav2vec2-base](https://huggingface.co/facebook/wav2vec2-base) (Apache-2.0)
-  - [XTTS-v2](https://huggingface.co/coqui/XTTS-v2) (Coqui Public Model License, non-commercial)
-  - [kNN-VC](https://github.com/bshall/knn-vc) (MIT)
-
-## Limitations
-
-- **Six speakers.** Per-speaker results vary a lot (± 3.3 points).
-- **Unseen generators.** A head trained on one generator learns that generator's fingerprint and drops to about 40% EER on a different one. Training on two generators helps, but it raises false alarms (25% at the default threshold), and it still has to be tested on a third generator kept out of training.
-- **Speaker head domain.** The speaker head was trained on English audiobooks. On Indian-accented phone speech its threshold had to be retuned on the team's own data.
+- Six speakers is small, so per-speaker results vary a lot.
+- A detector trained on one clone generator mostly misses others. Training on two helps but raises false alarms (25% at the default threshold), and it still needs testing on a third generator it has never seen.
+- The speaker head learned from English audiobooks, so its threshold had to be retuned for Indian-accented phone speech.

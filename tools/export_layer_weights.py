@@ -1,17 +1,15 @@
-"""Export the learned weights of every trained head, in one go.
-    python export_layer_weights.py                      (models\deepfake, libri_exp, spk_head)
-    python export_layer_weights.py models_backup        (also any backup folders you name)
-Reads every .pt in models\\deepfake\\, libri_exp\\ and models\\spk_head.pt (nothing is changed or retrained).
-Writes:
-  reports\\layer_weights.csv   - one row per model: how much it relies on each wav2vec2 layer L0..L12 (sums to 1)
-  reports\\layer_weights.json  - the same, plus per-seed values
-  reports\\all_parameters\\<model>.npz - every weight matrix and bias of that head (numpy arrays)
+"""Export the learned weights of every trained head.
+
+    python tools/export_layer_weights.py [extra folders]
+
+Writes reports/layer_weights.csv and .json (how much each head relies on layers L0-L12) and
+reports/all_parameters/<model>.npz (every weight and bias).
 """
 import csv, json, sys
 from pathlib import Path
 import numpy as np, torch
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "reports"; PAR = OUT / "all_parameters"
 FILES = sorted((ROOT / "models" / "deepfake").glob("*.pt")) + sorted((ROOT / "libri_exp").glob("*.pt")) \
         + [ROOT / "models" / "spk_head.pt"] + [f for d in sys.argv[1:] for f in sorted(Path(d).rglob("*.pt"))]

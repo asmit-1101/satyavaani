@@ -1,8 +1,12 @@
-"""Measure the live pipeline on your GPU: one 3 s window -> wav2vec2 pass + deepfake head + speaker head.
-    python measure_latency.py
-Writes reports\\latency.json (shown in the app's 'Under the hood' tab)."""
+"""Time one 3 s window through the live pipeline (wav2vec2 pass + both heads).
+
+    python pipeline/measure_latency.py      # writes reports/latency.json
+"""
 import json, time
 import numpy as np, torch
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # repo root, for the sv_* modules
 from sv_audio import WIN, REPORTS
 from sv_engine import Engine
 

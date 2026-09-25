@@ -1,7 +1,6 @@
-"""Redraw docs\\chart_layers.png: which wav2vec2 layers each deepfake head relies on, per training set.
-    python export_layer_weights.py      (first, if reports\\layer_weights.csv is missing)
-    python make_layer_chart.py
-Reads reports\\layer_weights.csv. Needs matplotlib (pip install matplotlib).
+"""Draw docs/chart_layers.png from reports/layer_weights.csv.
+
+    python tools/make_layer_chart.py        # run tools/export_layer_weights.py first
 """
 import csv
 from pathlib import Path
@@ -11,7 +10,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
 ROWS = [  # (model in layer_weights.csv, label on the chart)
     ("deepfake/all",                 "Our team: real vs XTTS"),
     ("libri_exp/deepfake_2gen_xtts",  "LibriSpeech: trained on XTTS only"),

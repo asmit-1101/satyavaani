@@ -1,7 +1,5 @@
-"""SATYAVAANI - the models.
-  Encoder       frozen wav2vec2-base, one pass -> 13 layers -> mean+std -> (B, 13, 1536)
-  DeepfakeModel learned softmax over the 13 layers -> small MLP -> logit   (ensemble of seeds)
-  load_speaker_head  YOUR trained speaker head -> numpy rebuild (sv_heads.SpeakerNP)
+"""Models: the frozen wav2vec2-base encoder (13 layers, mean + std pooled), the deepfake
+head ensemble, and a loader that rebuilds the trained speaker head in numpy.
 """
 import os, json, warnings
 os.environ.setdefault("HF_HUB_DISABLE_XET", "1")

@@ -1,15 +1,16 @@
-"""STEP 5 - load your trained speaker head, enrol the team, and measure it.
-    python step5_speaker.py
-Voiceprint of each teammate = their real sentences 001-010 through a phone line (codec only). Tested on 011-030:
-  genuine  - their own real clips          vs their voiceprint   (should be accepted)
-  impostor - other teammates' real clips   vs their voiceprint   (should be rejected)
-  clone    - XTTS clones of their clips    vs their voiceprint   (how many fool a voice check?)
-plus the same on phone-line copies. First it checks the rebuilt head separates voices at all.
-Writes models\\voiceprints.npz and reports\\speaker_test.json
+"""Step 5: enrol the team with the speaker head and measure it.
+
+    python pipeline/step5_speaker.py
+
+Voiceprints come from sentences 001-010 through a phone line. Sentences 011-030 test genuine
+callers, other teammates and XTTS clones. Writes models/voiceprints.npz and reports/speaker_test.json.
 """
 import json
 from collections import OrderedDict
 import numpy as np
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # repo root, for the sv_* modules
 from sv_audio import (SPEAKERS, NAME, ENROL_CLIPS, TEST_CLIPS, REPORTS, WIN, real_clip, xtts_clip,
                       load16, rms_norm, trim_silence, pad_to, train_windows, telephonize, speed_perturb)
 from sv_models import Encoder, load_speaker_head
@@ -42,7 +43,7 @@ def main():
         # voiceprint from sentences 001-010, phone-line (codec) copies only
         enrol = [E[("real", f"{s}_{k:03d}", 1)] for k in ENROL_CLIPS if ("real", f"{s}_{k:03d}", 1) in E]
         if enrol: vps[s] = (NAME[s], voiceprint(enrol))
-    if len(vps) < 2: raise SystemExit("Need real clips for at least 2 people - run step1_prep.py first.")
+    if len(vps) < 2: raise SystemExit("Need real clips for at least 2 people - run pipeline/step1_prep.py first.")
 
     def trials(kind, phone):
         g, i = [], []                                  # genuine / other-person cosines
@@ -62,7 +63,7 @@ def main():
     thr = thr_team if (0.05 < thr_team < 0.90 and e < 0.30) else spk.threshold
     rate = lambda a, t=thr: float((a >= t).mean()) if len(a) else float("nan")
 
-    print(f"\nspeaker EER on your team: {100 * e:.1f}%  (phone line {100 * e_ph:.1f}%)")
+    print(f"\nspeaker EER on the team: {100 * e:.1f}%  (phone line {100 * e_ph:.1f}%)")
     print(f"mean cosine  genuine {gen.mean():.2f} | other teammate {imp.mean():.2f} | XTTS clone {clone.mean():.2f}")
     print(f"threshold: LibriSpeech {spk.threshold:.3f}, our team {thr_team:.3f}  -> the app uses {thr:.3f}")
     print(f"  at {thr:.3f}: genuine accepted {100 * rate(gen):.0f}%, other teammates rejected {100 * (1 - rate(imp)):.0f}%, "
@@ -77,8 +78,8 @@ def main():
         print(f"  {s} {NAME[s]:<8}      {per[s]['genuine_cos'] or 0:.2f}    {per[s]['clone_cos'] or 0:.2f}     {100 * per[s]['clone_pass']:.0f}%")
 
     if e > 0.30:
-        print("\n!! The loaded head barely tells your teammates apart (EER > 30%). Most likely the feature pipeline")
-        print("   differs from how it was trained. Send ref_code\\train_speaker.py to Claude before trusting it.")
+        print("\nWarning: the speaker head barely separates the teammates (EER > 30%). The feature pipeline")
+        print("   probably differs from the one it was trained with (see ref_code/train_speaker.py).")
     elif e > 0.15:
         print("\nNote: speaker EER is weaker than on LibriSpeech (different mics, accents, phone). Expected cross-domain.")
 
@@ -92,7 +93,7 @@ def main():
     REPORTS.mkdir(exist_ok=True)
     (REPORTS / "speaker_test.json").write_text(json.dumps(rep, indent=2))
     print("\nsaved models\\voiceprints.npz and reports\\speaker_test.json")
-    print("Next: python measure_latency.py   then   python app.py")
+    print("Next: python pipeline/measure_latency.py   then   python app.py")
 
 if __name__ == "__main__":
     main()

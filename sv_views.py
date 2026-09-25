@@ -1,4 +1,4 @@
-"""SATYAVAANI - HTML/SVG views for the app (pure Python, no Gradio needed to render)."""
+"""HTML/SVG pieces for the app: risk ring, timeline, window log, layer chart."""
 import html
 import numpy as np
 

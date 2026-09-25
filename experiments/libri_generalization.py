@@ -1,24 +1,17 @@
-"""LibriSpeech generalization experiment - standalone, touches NOTHING in data\\ models\\ reports\\.
-    python -u libri_generalization.py                       (all stages, resumes where it stopped)
-    python -u libri_generalization.py --libri "D:\\...\\train-clean-100"
-    python -u libri_generalization.py --stage eval          (only retrain + evaluate)
-    python -u libri_generalization.py --stage eval --configs C,D   (only some noise settings)
-Question: a deepfake head trained on XTTS clones only - does it catch kNN-VC voice conversion?
-  1 select  : N_SPK LibriSpeech speakers, N_UTT sentences each (4-12 s), reference audio from ANOTHER chapter
-  2 xtts    : XTTS says the SAME sentence in the SAME speaker's voice (reference = other chapter)
-  3 knnvc   : test speakers only - another test speaker's sentence converted into this speaker's voice
-  4 features: identical recipe for every class, NO pitch/speed change: pauses gated and filled with noise,
-              optional random room echo, mic tilt, background noise at the setting's SNR, then EVERYTHING
-              through the phone line (8 kHz G.711); 3 s windows, wav2vec2 13 layers.
-              Settings A-D (CONFIGS) are run one after another and compared in one table.
-  5 eval    : train on FIT speakers (real vs XTTS), calibrate on CAL speakers, test on unseen TEST speakers:
-              real vs XTTS (seen generator) and real vs kNN-VC (unseen generator); silence-only shortcut test
-Everything lives in libri_exp\\ (clips, features, model, report).
+"""Does a deepfake head trained on XTTS clones catch kNN-VC voice conversion? (LibriSpeech)
+
+    python experiments/libri_generalization.py [--libri PATH] [--stage eval] [--configs A,B]
+
+Picks speakers and sentences, makes XTTS clones and kNN-VC fakes, extracts features (same
+augmentation for every class, all through a G.711 phone line), then trains on 70 speakers,
+calibrates on 10 and tests on 20 unseen ones. Settings A-D vary noise level and room echo.
+Everything goes to libri_exp/.
 """
 import sys, json, time, warnings
 warnings.filterwarnings("ignore")
 from pathlib import Path
 import numpy as np, soundfile as sf
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # repo root, for the sv_* modules
 from sv_audio import (ROOT, SR, WIN, load16, save16, rms_norm, trim_silence, to16k, train_windows, silence_only,
                       gate_pauses, random_tilt, add_noise, telephonize, pad_to, rng_for)
 from scipy.signal import fftconvolve
@@ -46,7 +39,7 @@ def find_libri():
     for base in (Path(r"C:\Users\saksh\vg_demo"), ROOT):
         hits = list(base.glob("**/train-clean-100"))
         if hits: return hits[0]
-    sys.exit('LibriSpeech not found - run:  python -u libri_generalization.py --libri "path\\to\\train-clean-100"')
+    sys.exit('LibriSpeech not found - run:  python -u experiments/libri_generalization.py --libri "path\\to\\train-clean-100"')
 
 def pretty(t):
     t = t.strip().lower()
@@ -246,7 +239,7 @@ def show(reps):
     print("\nwant: silence-only near 50% (pauses carry no clue), then the lowest kNN-VC EER.")
     for n, r in reps.items():
         print(f"  layer weights {n}: " + " ".join(f"L{i}:{v:.2f}" for i, v in enumerate(r["layer_weights"])))
-    print(f"saved {REPORT.relative_to(ROOT)}  (your app's models are untouched)")
+    print(f"saved {REPORT.relative_to(ROOT)}")
 
 if __name__ == "__main__":
     man = select()
