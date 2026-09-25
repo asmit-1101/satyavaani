@@ -47,6 +47,27 @@ def to16k(w, sr):
     g = gcd(SR, int(sr))
     return resample_poly(w, SR // g, int(sr) // g).astype("float32")
 
+class StreamResampler:
+    """Live mic -> 16 kHz without seams: resamples a rolling buffer and only hands out samples far
+    enough from the buffer edges, so 0.5 s pieces join exactly as if the whole recording was converted at once."""
+    GUARD = 800                                   # hold back the last 50 ms (edge of the filter) until more arrives
+    def __init__(self, sr):
+        g = gcd(SR, int(sr)); self.sr, self.up, self.down = int(sr), SR // g, int(sr) // g
+        self.raw, self.r0, self.out = np.zeros(0, "float32"), 0, 0
+    def push(self, x):
+        self.raw = np.concatenate([self.raw, np.asarray(x, "float32")])
+        if self.up == self.down == 1:
+            y, o0 = self.raw, self.r0
+        else:
+            y, o0 = resample_poly(self.raw, self.up, self.down).astype("float32"), self.r0 * self.up // self.down
+        end = o0 + len(y) - (0 if self.up == self.down else self.GUARD)
+        new = y[self.out - o0: end - o0] if end > self.out else np.zeros(0, "float32")
+        self.out = max(self.out, end)
+        keep = ((self.out - SR) * self.down // self.up) // self.down * self.down     # keep ~1 s of context
+        if keep > self.r0:
+            self.raw = self.raw[keep - self.r0:]; self.r0 = keep
+        return new
+
 def load16(path):
     """Any audio file -> mono float32 at 16 kHz, DC removed. WAV/FLAC via soundfile, else ffmpeg."""
     path = Path(path)

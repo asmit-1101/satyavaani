@@ -2,13 +2,13 @@
 
     python app.py               # http://127.0.0.1:7860
 
-Tabs: Live call (team demo calls, an upload, or the live mic), Under the hood, Enrol, API.
+Tabs: Live call (team demo calls, an upload, or the live mic), Model insights, Enrolment, API.
 """
 import time
 import numpy as np
 import gradio as gr
 from sv_audio import (SR, SPEAKERS, NAME, TEST_CLIPS, real_clip, xtts_clip, stitch, telephonize,
-                      load16, rms_norm, to16k)
+                      load16, rms_norm, to16k, StreamResampler)
 from sv_engine import Engine, CONTEXT_PRIORS, HOP_SEC
 import sv_views as V
 
@@ -20,12 +20,31 @@ KINDS = ["Real voice", "AI clone (XTTS)", "Real, then switches to AI clone"]
 GR6 = int(gr.__version__.split(".")[0]) >= 6
 
 CSS = V.CSS + """
-.gradio-container{max-width:1440px !important}
-#sv-head{padding:6px 2px 2px}
-#sv-head h1{margin:0;font-size:30px;letter-spacing:.04em}
-#sv-head p{margin:4px 0 0;color:#94a3b8}
+body, .gradio-container{background:#f4f6f9 !important}
+.gradio-container{max-width:1480px !important}
+#sv-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#0f1b2d;color:#fff;border-radius:12px;
+  padding:14px 18px;font-family:Inter,Segoe UI,system-ui,sans-serif}
+#sv-top .brand{font-weight:800;font-size:19px;letter-spacing:.08em}
+#sv-top .sub{color:#cbd5e1;font-size:13px}
+#sv-top .chips{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+#sv-top .chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:999px;
+  padding:4px 11px;font-size:12px;color:#e2e8f0}
+.sv-panel{background:#fff !important;border:1px solid #e4e7ec !important;border-radius:12px !important;padding:16px !important}
+.sv-panel-title{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#667085;margin:0 0 4px}
 """
-THEME = gr.themes.Soft(primary_hue="indigo", neutral_hue="slate")
+THEME = gr.themes.Default(primary_hue="blue", neutral_hue="slate",
+                          font=[gr.themes.GoogleFont("Inter"), "Segoe UI", "system-ui", "sans-serif"])
+
+def top_bar():
+    lat = (ENGINE.info.get("latency") or {}).get("median_ms", ENGINE.info.get("startup_ms"))
+    chips = [f"Models loaded &middot; {ENGINE.info.get('gpu', 'CPU')}",
+             f"{lat:.0f} ms per 3 s window" if lat else "", f"{len(ENGINE.voiceprints)} enrolled voices"]
+    logo = ('<svg width="30" height="30" viewBox="0 0 30 30"><rect width="30" height="30" rx="8" fill="#2a78d6"/>'
+            '<g stroke="#fff" stroke-width="2.4" stroke-linecap="round"><line x1="8" y1="12" x2="8" y2="18"/>'
+            '<line x1="12.5" y1="8" x2="12.5" y2="22"/><line x1="17" y1="11" x2="17" y2="19"/><line x1="21.5" y1="13" x2="21.5" y2="17"/></g></svg>')
+    return (f'<div id="sv-top">{logo}<div><div class="brand">SATYAVAANI</div>'
+            f'<div class="sub">Call risk console &middot; AI voice-clone and caller-identity check, every 3 seconds</div></div>'
+            f'<div class="chips">{"".join(f"<span class=chip>{c}</span>" for c in chips if c)}</div></div>')
 
 def caller_choices():
     return [("Unknown number", "none")] + [(n, vid) for vid, (n, _) in ENGINE.voiceprints.items()]
@@ -53,9 +72,11 @@ def render(pack, t=0.0, live=False, ended=False):
     st = pack["st"]
     scored = any(h.get("scored") for h in st.history)
     verdict = st.verdict if scored else "LISTENING"
-    reason = st.history[-1]["reason"] if st.history else "Waiting for the first 3 seconds of speech ..."
+    reason = st.history[-1]["reason"] if st.history else ""
     return (V.call_card(pack["caller"], pack["channel"], t, live, ended, pack.get("truth"), verdict),
-            V.risk_ring(st.risk if scored else None, verdict, reason, st.alert),
+            V.phone_screen(pack["caller"], pack["channel"], t, live, ended, pack.get("truth"), verdict,
+                           st.risk if scored else None, st.history, st.alert),
+            V.risk_ring(st.risk if scored else None, verdict, reason, st.alert, history=st.history, thr=ENGINE.thr),
             V.timeline(st.history, t_now=t),
             V.window_log(st.history))
 
@@ -114,7 +135,14 @@ def mic_chunk(chunk, pack, caller, ctx, phone=True):
         x = np.asarray(data)
         x = x.astype("float32") / 32768.0 if x.dtype == np.int16 else x.astype("float32")
         if x.ndim == 2: x = x.mean(1)
-        ENGINE.push(pack["st"], to16k(x, sr))
+        prev = pack.get("last_raw")
+        if prev is not None and len(x) > len(prev) and np.array_equal(x[: len(prev)], prev):
+            new = x[len(prev):]                      # browser sent everything so far: keep only the new part
+        else:
+            new = x
+        pack["last_raw"] = x
+        if pack.get("rs") is None or pack["rs"].sr != int(sr): pack["rs"] = StreamResampler(sr)
+        ENGINE.push(pack["st"], pack["rs"].push(new))
     return (pack, *render(pack, pack["st"].n / SR, live=True))
 
 def mic_stop(pack):
@@ -131,9 +159,13 @@ def do_enrol(name, path):
     msg = f"Enrolled **{name}** as `{vid}` from {n} speech windows. Stored: one 192-number voiceprint, no audio."
     return msg, V.enrolled_list(ENGINE.voiceprints), gr.Dropdown(choices=caller_choices()), gr.Dropdown(choices=caller_choices())
 
-def api_score(path, caller, ctx):
+def api_score(path, caller, ctx, phone=False):
     if not path: raise gr.Error("Give an audio file.")
-    return ENGINE.score_audio(rms_norm(load16(path)), claimed=claimed_of(caller), prior=prior_of(ctx))
+    w = rms_norm(load16(path))
+    if phone: w = telephonize(w)
+    out = ENGINE.score_audio(w, claimed=claimed_of(caller), prior=prior_of(ctx))
+    out["channel"] = "phone line G.711 8 kHz" if phone else "wideband 16 kHz"
+    return out
 
 API_DOC = """
 **REST API** - run `python api_server.py` next to this app, then open **http://127.0.0.1:8000/docs**.
@@ -153,12 +185,12 @@ blocks_kw = {} if GR6 else {"css": CSS, "theme": THEME}
 default_caller = "s01" if "s01" in ENGINE.voiceprints else "none"
 
 with gr.Blocks(title="SATYAVAANI", **blocks_kw) as demo:
-    gr.HTML('<div id="sv-head"><h1>SATYAVAANI</h1>'
-            '<p>Real-time AI voice-clone detection for live calls &middot; one wav2vec2 pass, two heads</p></div>')
+    gr.HTML(top_bar())
     with gr.Tabs():
         with gr.Tab("Live call"):
-            with gr.Row():
-                with gr.Column(scale=4, min_width=320):
+            with gr.Row(equal_height=False):
+                with gr.Column(scale=3, min_width=300, elem_classes="sv-panel"):
+                    gr.HTML('<div class="sv-panel-title">Call setup</div>')
                     mode = gr.Radio(MODES, value=MODES[0], label="Audio source")
                     caller = gr.Dropdown(caller_choices(), value=default_caller, label="Caller ID says it is")
                     with gr.Column(visible=True) as demo_box:
@@ -173,13 +205,22 @@ with gr.Blocks(title="SATYAVAANI", **blocks_kw) as demo:
                     ctx = gr.CheckboxGroup(list(CONTEXT_PRIORS), label="Call context (raises the prior)")
                     with gr.Row():
                         start = gr.Button("Start call", variant="primary")
-                        stop = gr.Button("Hang up")
+                        stop = gr.Button("Hang up", variant="stop")
                     player = gr.Audio(label="Call audio", autoplay=True, interactive=False, type="numpy")
-                with gr.Column(scale=5, min_width=380):
-                    card_v, ring_v, tl_v, log_v = [gr.HTML(v) for v in empty_views()]
+                v0 = empty_views()
+                with gr.Column(scale=3, min_width=320):
+                    phone_v = gr.HTML(v0[1])
+                with gr.Column(scale=5, min_width=360):
+                    card_v = gr.HTML(v0[0])
+                    ring_v = gr.HTML(v0[2])
+            with gr.Row(equal_height=False):
+                with gr.Column(scale=6, min_width=360):
+                    tl_v = gr.HTML(v0[3])
+                with gr.Column(scale=5, min_width=360):
+                    log_v = gr.HTML(v0[4])
             pack = gr.State(None)
 
-        with gr.Tab("Under the hood"):
+        with gr.Tab("Model insights"):
             gr.HTML(V.layer_butterfly(ENGINE.info["df_layers"], ENGINE.info["spk_layers"]))
             gr.HTML(V.metrics_panel(ENGINE.info))
             gr.Markdown(
@@ -192,9 +233,10 @@ with gr.Blocks(title="SATYAVAANI", **blocks_kw) as demo:
                 "**Privacy:** runs on-premise, audio is processed in memory and dropped; the only thing stored per person "
                 "is a 192-number voiceprint (768 bytes).")
 
-        with gr.Tab("Enrol"):
-            with gr.Row():
-                with gr.Column():
+        with gr.Tab("Enrolment"):
+            with gr.Row(equal_height=False):
+                with gr.Column(elem_classes="sv-panel"):
+                    gr.HTML('<div class="sv-panel-title">Enrol a voice</div>')
                     en_name = gr.Textbox(label="Name")
                     en_audio = gr.Audio(sources=["microphone", "upload"], type="filepath",
                                         label="10-20 s of their normal voice")
@@ -204,17 +246,19 @@ with gr.Blocks(title="SATYAVAANI", **blocks_kw) as demo:
                     en_list = gr.HTML(V.enrolled_list(ENGINE.voiceprints))
 
         with gr.Tab("API"):
-            with gr.Row():
-                with gr.Column():
+            with gr.Row(equal_height=False):
+                with gr.Column(elem_classes="sv-panel"):
+                    gr.HTML('<div class="sv-panel-title">Score a file</div>')
                     api_audio = gr.Audio(sources=["upload", "microphone"], type="filepath", label="Audio (3 s or more)")
                     api_caller = gr.Dropdown(caller_choices(), value="none", label="Caller claims to be")
                     api_ctx = gr.CheckboxGroup(list(CONTEXT_PRIORS), label="Call context")
+                    api_phone = gr.Checkbox(value=False, label="Send it through a phone line (8 kHz G.711)")
                     api_btn = gr.Button("Score", variant="primary")
                     gr.Markdown(API_DOC)
                 with gr.Column():
                     api_out = gr.JSON(label="Response")
 
-    views = [card_v, ring_v, tl_v, log_v]
+    views = [card_v, phone_v, ring_v, tl_v, log_v]
     mode.change(on_mode, mode, [demo_box, upload_box, mic_box, start])
     ev1 = start.click(prepare_call, [mode, caller, speaker, kind, phone, ctx, upload], [player, pack] + views)
     ev2 = ev1.then(run_call, [pack], views)
@@ -226,8 +270,8 @@ with gr.Blocks(title="SATYAVAANI", **blocks_kw) as demo:
         mic.stream(mic_chunk, [mic, pack, caller, ctx, phone], [pack] + views)
     mic.stop_recording(mic_stop, [pack], views)
     en_btn.click(do_enrol, [en_name, en_audio], [en_msg, en_list, caller, api_caller])
-    api_btn.click(api_score, [api_audio, api_caller, api_ctx], api_out, api_name="score")
-    demo.load(None, None, None, js="() => { document.body.classList.add('dark'); }")
+    api_btn.click(api_score, [api_audio, api_caller, api_ctx, api_phone], api_out, api_name="score")
+    demo.load(None, None, None, js="() => { document.body.classList.remove('dark'); document.documentElement.classList.remove('dark'); }")
 
 if __name__ == "__main__":
     launch_kw = {"css": CSS, "theme": THEME} if GR6 else {}
