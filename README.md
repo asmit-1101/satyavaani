@@ -2,6 +2,8 @@
 
 Real-time detection of AI voice clones on phone calls. Built by Team-Cognify for Smart India Hackathon, problem statement **SIH26104**: *AI-Powered Real-Time Detection and Prevention of Voice Cloning Impersonation Attacks* (Blockchain & Cybersecurity).
 
+**Try it live:** [huggingface.co/spaces/asmit1101/satyavaani](https://huggingface.co/spaces/asmit1101/satyavaani) (full screen: [asmit1101-satyavaani.hf.space](https://asmit1101-satyavaani.hf.space)). Upload a recording or use your microphone, and enrol your own voice on the Enrolment tab to try the caller check. The demo runs on Hugging Face's basic CPU (about 270 ms per 3-second check, against 18 ms on our GPU), and our team's demo calls aren't included because our recordings stay private.
+
 Every 3 seconds we run one pass of a frozen wav2vec2 model over the call audio and feed it to two small heads. One asks *is this voice synthetic?*, the other asks *is this really the person on the caller ID?* Together they give one risk score: **PASS**, **VERIFY** or **HOLD**.
 
 ```mermaid
@@ -78,6 +80,15 @@ python api_server.py   # http://127.0.0.1:8000/docs
 
 The trained heads are in `models/`, and wav2vec2-base downloads on first run. You can upload a recording, use the live microphone, or enrol new voices. The built-in demo calls need our team's recordings, which aren't in this repo.
 
+### Put your own copy on Hugging Face
+
+```powershell
+python prepare_space.py                                   # builds space\ with only what the web app needs
+hf upload YOUR-HF-USERNAME/YOUR-SPACE .\space . --repo-type=space
+```
+
+Create the Space first (SDK: Gradio, hardware: CPU basic). Hugging Face now needs a PRO account for Gradio Spaces. The script never copies recordings, clones or voiceprints, opens the app on "Upload a recording", and deletes uploaded audio from the server after about 10 minutes.
+
 ## Train it on your own voices
 
 Put your phone recordings in `raw/`, describe who read what in `SPEAKERS` at the top of `sv_audio.py`, then:
@@ -97,6 +108,7 @@ The speaker head was trained separately on LibriSpeech train-clean-100 (`ref_cod
 
 ```
 app.py, api_server.py     the web app and the REST API
+prepare_space.py          builds the Hugging Face Space folder (space/, not committed)
 sv_*.py                   audio processing, models, scoring engine, UI pieces
 pipeline/                 steps 1-5 and the latency test
 experiments/              LibriSpeech generalisation, two generators, voiceprint comparison
