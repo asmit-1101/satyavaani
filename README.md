@@ -1,6 +1,6 @@
 # SATYAVAANI
 
-Real-time detection of AI voice clones on phone calls. Built for Smart India Hackathon, problem statement 21064.
+Real-time detection of AI voice clones on phone calls. Built by Team-Cognify for Smart India Hackathon, problem statement **SIH26104**: *AI-Powered Real-Time Detection and Prevention of Voice Cloning Impersonation Attacks* (Blockchain & Cybersecurity).
 
 Every 3 seconds we run one pass of a frozen wav2vec2 model over the call audio and feed it to two small heads. One asks *is this voice synthetic?*, the other asks *is this really the person on the caller ID?* Together they give one risk score: **PASS**, **VERIFY** or **HOLD**.
 
@@ -12,7 +12,37 @@ flowchart LR
     C --> E["Risk: synthetic OR not the caller"]
     D --> E
     E --> F["PASS / VERIFY / HOLD"]
+    A -.-> G["Speech-to-text + scam-language score<br/>(in progress)"]
+    A -.-> H["Pitch and prosody analysis<br/>(in progress)"]
+    G -.-> E
+    H -.-> E
 ```
+
+Dashed lines are the parts we're still building.
+
+## Working now, and in progress
+
+| Part | What it answers | Status |
+|---|---|---|
+| Deepfake head | Is this voice made by AI? | Working |
+| Speaker head | Is this the person on the caller ID? | Working |
+| Risk score, web app, REST API | PASS / VERIFY / HOLD every 3 seconds | Working |
+| Scam-language score ("sentiment score") | Does what they're saying sound like a fraudster? | **In progress** |
+| Pitch and prosody analysis | Does the voice move like a real person's? | **In progress** |
+
+### Scam-language score (in progress)
+
+A speech-to-text step turns the call into words, and a text model scores how likely those sentences are to come from a fraudster: urgency ("right now"), secrecy ("don't tell anyone"), requests for money, UPI transfers or OTPs, and claims of authority ("I'm calling from your bank"). A cloned voice can sound perfect, but the scammer still has to ask for the money.
+
+Today the app's call-context options (unknown number, asks for money or an OTP, urgent or secret request) are ticked by hand. This score will set them automatically from what's actually said. Like the other signals it can only raise the risk, and the words will be scored on the fly, not stored. We're starting with English and Hindi.
+
+### Pitch and prosody analysis (in progress)
+
+This tracks how pitch rises and falls, how fast someone talks, where they pause and how loudness changes across the call. Cloning tools copy how a voice sounds but can get how it moves wrong: too flat, too regular, or emotion that doesn't fit the words. It also helps a genuinely scared caller read as human rather than suspicious.
+
+It will join the risk score as a third signal, under the same rule: any signal can raise the risk, and none can lower what another has found.
+
+Neither of these has results yet, so every number below comes from the two working heads. More detail is in section 8 of the [findings report](docs/SATYAVAANI_experimental_findings.pdf).
 
 ## Results
 
