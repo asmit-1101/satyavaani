@@ -1,0 +1,7 @@
+"""Makes the project folder importable for the tests (sv_audio, sv_heads, sv_engine)."""
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))

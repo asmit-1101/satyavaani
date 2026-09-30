@@ -1,5 +1,7 @@
 # SATYAVAANI
 
+[![tests](https://github.com/asmit-1101/satyavaani/actions/workflows/tests.yml/badge.svg)](https://github.com/asmit-1101/satyavaani/actions/workflows/tests.yml)
+
 Real-time detection of AI voice clones on phone calls. Built by Team-Cognify for Smart India Hackathon, problem statement **SIH26104**: *AI-Powered Real-Time Detection and Prevention of Voice Cloning Impersonation Attacks* (Blockchain & Cybersecurity).
 
 **Try it live:** [huggingface.co/spaces/asmit1101/satyavaani](https://huggingface.co/spaces/asmit1101/satyavaani) (full screen: [asmit1101-satyavaani.hf.space](https://asmit1101-satyavaani.hf.space)). Upload a recording or use your microphone, and enrol your own voice on the Enrolment tab to try the caller check. The demo runs on Hugging Face's basic CPU (about 270 ms per 3-second check, against 18 ms on our GPU), and our team's demo calls aren't included because our recordings stay private.
@@ -89,6 +91,20 @@ hf upload YOUR-HF-USERNAME/YOUR-SPACE .\space . --repo-type=space
 
 Create the Space first (SDK: Gradio, hardware: CPU basic). Hugging Face now needs a PRO account for Gradio Spaces. The script never copies recordings, clones or voiceprints, opens the app on "Upload a recording", and deletes uploaded audio from the server after about 10 minutes.
 
+## Tests
+
+```powershell
+pip install pytest
+pytest
+```
+
+27 tests run on every push through GitHub Actions (the badge at the top). They need no trained models and no recordings: the live engine gets small stand-in models, so the tests check our own logic:
+
+- **Risk rule:** PASS below 45, VERIFY 45-75, HOLD 75 and up; a fake voice OR the wrong person raises the risk, and a matching voice never lowers it.
+- **Call scenarios** from the findings report: a genuine caller passes, an AI clone is held at the first 3-second window, a real person pretending is caught once 4 s of speech are in, a call taken over by a clone ends in HOLD, one odd window can't turn a real call red, and silence holds the score.
+- **Audio:** the phone-line filter removes everything above 4 kHz, the live-mic resampler joins 0.5 s pieces with no seams, and the speech detector ignores silence and faint hiss.
+- **Maths:** EER, Platt calibration (including the "0% caught" bug we fixed) and voiceprint saving and loading.
+
 ## Train it on your own voices
 
 Put your phone recordings in `raw/`, describe who read what in `SPEAKERS` at the top of `sv_audio.py`, then:
@@ -108,6 +124,7 @@ The speaker head was trained separately on LibriSpeech train-clean-100 (`ref_cod
 
 ```
 app.py, api_server.py     the web app and the REST API
+tests/                    automated tests (pytest), run by .github/workflows/tests.yml
 prepare_space.py          builds the Hugging Face Space folder (space/, not committed)
 sv_*.py                   audio processing, models, scoring engine, UI pieces
 pipeline/                 steps 1-5 and the latency test
