@@ -17,9 +17,10 @@ flowchart LR
     D --> E
     E --> F["PASS / VERIFY / HOLD"]
     A -.-> G["Speech-to-text + scam-language score<br/>(in progress)"]
-    A -.-> H["Pitch and prosody analysis<br/>(in progress)"]
+    B -.-> H["Pitch and prosody analysis<br/>(in progress)"]
     G -.-> E
     H -.-> E
+
 ```
 
 Dashed lines are the parts we're still building.
